@@ -3,12 +3,12 @@
 
 
 
+REALTIME NOISE (POSSIBLE OPTIMIZATION):
+            get terrain from realtime noise funcs, store changed only
 
-get terrain from realtime noise funcs, store changed only
 
-
-
-Refactor heightmap to have a HeightTile struct {    bool broken          }
+SHELL GROUND:
+    Refactor heightmap to have a HeightTile struct {    bool broken          }
 
 
 Fill all space below heightmap with blocks
