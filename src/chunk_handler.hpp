@@ -11,6 +11,8 @@
 
 #include <string>
 
+#include "perlin_stuff.hpp"
+
 #ifndef CHUNK_WIDTH
 #define CHUNK_WIDTH 18
 #endif
@@ -25,7 +27,7 @@ public:
     entt::entity id;
     glm::vec2 chunk_position;
     Chunk();
-    Chunk(glm::vec2 c_pos, entt::registry& r, GLWrapper& w, std::unordered_map<IntTup, int, IntTupHash>& wo, std::unordered_map<IntTup, float, IntTupHash>& hm);
+    Chunk(glm::vec2 c_pos, entt::registry& r, GLWrapper& w, std::unordered_map<IntTup, int, IntTupHash>& wo, std::unordered_map<IntTup, unsigned char, IntTupHash>& hm);
 
     Chunk& operator=(const Chunk& other);
     Chunk& rebuild();
@@ -35,12 +37,13 @@ private:
     entt::registry* m_reg;
     GLWrapper* m_wrap;
     std::unordered_map<IntTup, int, IntTupHash>* m_world;
-    std::unordered_map<IntTup, float, IntTupHash>* m_height;
+    std::unordered_map<IntTup, unsigned char, IntTupHash>* m_height;
 };
 
 #ifdef CHUNK_IMPLEMENTATION
 
-Chunk::Chunk(glm::vec2 c_pos, entt::registry& r, GLWrapper& w, std::unordered_map<IntTup, int, IntTupHash>& wo, std::unordered_map<IntTup, float, IntTupHash>& hm)
+
+Chunk::Chunk(glm::vec2 c_pos, entt::registry& r, GLWrapper& w, std::unordered_map<IntTup, int, IntTupHash>& wo, std::unordered_map<IntTup, unsigned char, IntTupHash>& hm)
     : m_reg(&r), m_wrap(&w), m_world(&wo), chunk_position(c_pos), m_height(&hm) {
     this->id = m_reg->create();
 };
@@ -84,125 +87,124 @@ Chunk& Chunk::rebuild()
                 0,
                 (int)(this->chunk_position.y * CHUNK_WIDTH) + k
             );
-            //Heightmap
-            if(m_height->find(tup) != m_height->end() &&
-                    m_height->find(tup + IntTup(1,0)) != m_height->end() &&
-                    m_height->find(tup + IntTup(1,1)) != m_height->end() &&
-                    m_height->find(tup + IntTup(0,1)) != m_height->end()
-              ) {
 
-                float fly = m_height->at(tup);
-                float fry = m_height->at(tup + IntTup(1,0));
-                float bry = m_height->at(tup + IntTup(1,1));
-                float bly = m_height->at(tup + IntTup(0,1));
-                //std::cout << std::to_string(fly) << std::endl;
-                verts.insert(verts.end(), {
-                    static_cast<float>(tup.x), fly, static_cast<float>(tup.z),
-                    static_cast<float>(tup.x + 1), fry, static_cast<float>(tup.z),
-                    static_cast<float>(tup.x + 1),bry, static_cast<float>(tup.z + 1),
 
-                    static_cast<float>(tup.x + 1), bry, static_cast<float>(tup.z + 1),
-                    static_cast<float>(tup.x), bly, static_cast<float>(tup.z + 1),
-                    static_cast<float>(tup.x), fly, static_cast<float>(tup.z),
-                });
 
-                
+            unsigned char fly = height_noise_func(tup);
+            unsigned char fry = height_noise_func(tup + IntTup(1,0));
+            unsigned char bry = height_noise_func(tup + IntTup(1,1));
+            unsigned char bly = height_noise_func(tup + IntTup(0,1));
+            //std::cout << std::to_string(fly) << std::endl;
+            verts.insert(verts.end(), {
+                static_cast<float>(tup.x), static_cast<float>(fly), static_cast<float>(tup.z),
+                static_cast<float>(tup.x + 1), static_cast<float>(fry), static_cast<float>(tup.z),
+                static_cast<float>(tup.x + 1),static_cast<float>(bry), static_cast<float>(tup.z + 1),
 
-                
+                static_cast<float>(tup.x + 1), static_cast<float>(bry), static_cast<float>(tup.z + 1),
+                static_cast<float>(tup.x), static_cast<float>(bly), static_cast<float>(tup.z + 1),
+                static_cast<float>(tup.x), static_cast<float>(fly), static_cast<float>(tup.z),
+            });
 
-                float flb = 1.0f;
-                float frb = 1.0f;
-                float brb = 1.0f;
-                float blb = 1.0f;
 
-                float dark = 0.6f;
 
-                float slantbottom = 0.3f;
 
-                for(int b = static_cast<int>(fly)+2; b < CHUNK_HEIGHT; ++b) {
-                    IntTup t(tup.x, b, tup.z);
-                    if(m_world->find(t) != m_world->end()) {
-                        flb = dark;
-                        
-                        break;
-                    }
-                    
+
+            float flb = 1.0f;
+            float frb = 1.0f;
+            float brb = 1.0f;
+            float blb = 1.0f;
+
+            float dark = 0.6f;
+
+            float slantbottom = 0.3f;
+
+            for(int b = static_cast<int>(fly)+2; b < CHUNK_HEIGHT; ++b) {
+                IntTup t(tup.x, b, tup.z);
+                if(block_noise_func(t)) {
+                    flb = dark;
+
+                    break;
                 }
-                if(fly < fry || fly < bry || fly < bly) {
-                            flb -= slantbottom;
-                        }
-                for(int b = static_cast<int>(fry)+2; b < CHUNK_HEIGHT; ++b) {
-                    IntTup t(tup.x+1, b, tup.z);
-                    if(m_world->find(t) != m_world->end()) {
-                        frb = dark;
-                        
-                        break;
-                    }
-                    
-                }
-                if(fry < fly || fry < bry || fry < bly) {
-                            frb -= slantbottom;
-                        }
-                for(int b = static_cast<int>(bry)+2; b < CHUNK_HEIGHT; ++b) {
-                    IntTup t(tup.x+1, b, tup.z+1);
-                    if(m_world->find(t) != m_world->end()) {
-                        brb = dark;
-                        
-                        break;
-                    }
-                    
-                }
-                if(bry < fly || bry < fry || bry < bly) {
-                            brb -= slantbottom;
-                        }
-                for(int b = static_cast<int>(bly)+2; b < CHUNK_HEIGHT; ++b) {
-                    IntTup t(tup.x, b, tup.z+1);
-                    if(m_world->find(t) != m_world->end()) {
-                        blb = dark;
-                        
-                        break;
-                    }
-                    
-                }
-                if(bly < fly || bly < fry || bly < bry) {
-                            blb -= slantbottom;
-                        }
 
-                cols.insert(cols.end(), {
-                    flb,flb,flb,
-                    frb,frb,frb,
-                    brb,brb,brb,
-
-                    brb,brb,brb,
-                    blb,blb,blb,
-                    flb,flb,flb,
-                });
-                uvs.insert(uvs.end(), {
-                    heightface.bl.x, heightface.bl.y,
-                    heightface.tl.x, heightface.tl.y,
-                    heightface.tr.x, heightface.tr.y,
-
-                    heightface.tr.x, heightface.tr.y,
-                    heightface.br.x, heightface.br.y,
-                    heightface.bl.x, heightface.bl.y,
-                });
             }
+            if(fly < fry || fly < bry || fly < bly) {
+                flb -= slantbottom;
+            }
+            for(int b = static_cast<int>(fry)+2; b < CHUNK_HEIGHT; ++b) {
+                IntTup t(tup.x+1, b, tup.z);
+                if(block_noise_func(t)) {
+                    frb = dark;
+
+                    break;
+                }
+
+            }
+            if(fry < fly || fry < bry || fry < bly) {
+                frb -= slantbottom;
+            }
+            for(int b = static_cast<int>(bry)+2; b < CHUNK_HEIGHT; ++b) {
+                IntTup t(tup.x+1, b, tup.z+1);
+                if(block_noise_func(t)) {
+                    brb = dark;
+
+                    break;
+                }
+
+            }
+            if(bry < fly || bry < fry || bry < bly) {
+                brb -= slantbottom;
+            }
+            for(int b = static_cast<int>(bly)+2; b < CHUNK_HEIGHT; ++b) {
+                IntTup t(tup.x, b, tup.z+1);
+                if(block_noise_func(t)) {
+                    blb = dark;
+
+                    break;
+                }
+
+            }
+            if(bly < fly || bly < fry || bly < bry) {
+                blb -= slantbottom;
+            }
+
+            cols.insert(cols.end(), {
+                flb,flb,flb,
+                frb,frb,frb,
+                brb,brb,brb,
+
+                brb,brb,brb,
+                blb,blb,blb,
+                flb,flb,flb,
+            });
+            uvs.insert(uvs.end(), {
+                heightface.bl.x, heightface.bl.y,
+                heightface.tl.x, heightface.tl.y,
+                heightface.tr.x, heightface.tr.y,
+
+                heightface.tr.x, heightface.tr.y,
+                heightface.br.x, heightface.br.y,
+                heightface.bl.x, heightface.bl.y,
+            });
+
 
             //Blocks
             for(int j = 0; j < CHUNK_HEIGHT; ++j)
             {
                 tup.set(
                     tup.x,
-                    0 + j,
+                    0+j,
                     tup.z
                 );
-                if(m_world->find(tup) != m_world->end())
+
+                bool solid = block_noise_func(tup);
+
+                if(solid)
                 {
                     for(Neighbor& neighbor : get_neighbors(tup))
                     {
-                        if(m_world->find(neighbor.tup) == m_world->end())
+                        if(!block_noise_func(neighbor.tup))
                         {
-                            Cube::stamp_face(neighbor.face, tup.x, tup.y, tup.z, face, verts, cols, uvs, *m_world);
+                            Cube::stamp_face(neighbor.face, tup.x, tup.y, tup.z, face, verts, cols, uvs);
                         }
                     }
                 }

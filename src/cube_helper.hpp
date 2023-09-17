@@ -1,4 +1,11 @@
 #pragma once
+
+enum CubeFace {
+    TOP = 0, BOTTOM, LEFT, RIGHT, FRONT, BACK
+};
+
+
+
 #include "glwrapper.hpp"
 #include "textureface.hpp"
 #include <vector>
@@ -8,10 +15,8 @@
 #include <cfenv>
 #include <climits>
 #include <iostream>
+#include "perlin_stuff.hpp"
 
-enum CubeFace {
-    TOP = 0, BOTTOM, LEFT, RIGHT, FRONT, BACK
-};
 
 class Cube {
 public:
@@ -23,8 +28,7 @@ public:
                            TextureFace& tex,
                            std::vector<GLfloat>& verts,
                            std::vector<GLfloat>& cols,
-                           std::vector<GLfloat>& uvs,
-                           std::unordered_map<IntTup, int, IntTupHash>& worldref);
+                           std::vector<GLfloat>& uvs);
 };
 
 #ifdef CUBE_HELPER_IMPLEMENTATION
@@ -91,8 +95,7 @@ void Cube::stamp_face(CubeFace face,
                       TextureFace& tex,
                       std::vector<GLfloat>& verts,
                       std::vector<GLfloat>& cols,
-                      std::vector<GLfloat>& uvs,
-                      std::unordered_map<IntTup, int, IntTupHash>& worldref)
+                      std::vector<GLfloat>& uvs)
 {
 
     glm::vec3 verties[6] = { glm::vec3(Cube::faces[face][0], Cube::faces[face][1], Cube::faces[face][2]),
@@ -170,7 +173,7 @@ void Cube::stamp_face(CubeFace face,
 
         for(int ii = 0; ii < 3; ++ii)
         {
-            if(worldref.find(spots[ii]) != worldref.end())
+            if(block_noise_func(spots[ii]))
             {
                 count += 1;
                 solids[ii] = true;

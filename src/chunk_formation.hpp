@@ -15,12 +15,12 @@ public:
 
     Chunk chunks[LOAD_WIDTH*LOAD_WIDTH];
     //entt::entity entities[LOAD_WIDTH*LOAD_WIDTH];
-    ChunkFormation(GLWrapper& wr, std::unordered_map<IntTup, int, IntTupHash> &worldmap, entt::registry& reg, std::unordered_map<IntTup, float, IntTupHash> &heightmap);
+    ChunkFormation(GLWrapper& wr, std::unordered_map<IntTup, int, IntTupHash> &worldmap, entt::registry& reg, std::unordered_map<IntTup, unsigned char, IntTupHash> &heightmap);
     void set_position(glm::vec3& pos);
 private:
     GLWrapper& m_wrap;
     std::unordered_map<IntTup, int, IntTupHash>& m_world;
-    std::unordered_map<IntTup, float, IntTupHash>& m_height;
+    std::unordered_map<IntTup, unsigned char, IntTupHash>& m_height;
     entt::registry& m_reg;
 };
 
@@ -70,7 +70,7 @@ void ChunkFormation::set_position(glm::vec3& camera_pos) {
 
 }
 
-ChunkFormation::ChunkFormation(GLWrapper& wr, std::unordered_map<IntTup, int, IntTupHash> &worldmap, entt::registry& reg, std::unordered_map<IntTup, float, IntTupHash> &heightmap)
+ChunkFormation::ChunkFormation(GLWrapper& wr, std::unordered_map<IntTup, int, IntTupHash> &worldmap, entt::registry& reg, std::unordered_map<IntTup, unsigned char, IntTupHash> &heightmap)
     : m_wrap(wr), m_world(worldmap), m_reg(reg), m_height(heightmap)
 {
 

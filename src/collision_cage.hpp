@@ -7,6 +7,7 @@
 #include "cube_helper.hpp"
 #include "mesh_component.hpp"
 #include "textureface.hpp"
+#include "perlin_stuff.hpp"
 class BoundingBox
 {
 public:
@@ -125,7 +126,7 @@ public:
     std::array<entt::entity, NUMBER_OF_BOXES> entities;
     static const glm::vec3 normals[NUMBER_OF_BOXES];
     static const glm::ivec3 positions[NUMBER_OF_BOXES];
-    CollisionCage(GLWrapper &wr, std::unordered_map<IntTup, int, IntTupHash> &worldmap, entt::registry &reg);
+    CollisionCage(GLWrapper &wr, entt::registry &reg);
     void update_position(glm::vec3 &pos);
     void update_solidity();
     void update_colliding(BoundingBox &user);
@@ -133,7 +134,6 @@ public:
     void update_readings(glm::vec3 &pos);
 
 private:
-    std::unordered_map<IntTup, int, IntTupHash> &m_world;
     GLWrapper &m_wrap;
     entt::registry &m_reg;
 };
@@ -167,8 +167,7 @@ void CollisionCage::debug_display()
                              TextureFace(10,10),
                              verts,
                              cols,
-                             uvs,
-                             m_world);
+                             uvs);
         }
 
         if (!m_reg.all_of<MeshComponent>(entities[side]))
@@ -222,7 +221,7 @@ void CollisionCage::update_solidity()
         glm::vec3 spot = this->boxes[i].center;
         IntTup tup(spot.x, spot.y, spot.z);
         Side side = static_cast<Side>(i);
-        if (m_world.find(tup) != m_world.end())
+        if (block_noise_func(tup))
         {
             if(std::find(this->solid.begin(), this->solid.end(), side) == solid.end())
             {
@@ -267,8 +266,8 @@ void CollisionCage::update_colliding(BoundingBox &user)
     //std::cout << "colliding size: " <<  this->colliding.size() << std::endl;
 }
 
-CollisionCage::CollisionCage(GLWrapper &wr, std::unordered_map<IntTup, int, IntTupHash> &worldmap, entt::registry &reg)
-    : m_world(worldmap), m_wrap(wr), m_reg(reg), boxes{
+CollisionCage::CollisionCage(GLWrapper &wr, entt::registry &reg)
+    : m_wrap(wr), m_reg(reg), boxes{
     BoundingBox(CollisionCage::positions[0], CollisionCage::normals[0]),
     BoundingBox(CollisionCage::positions[1], CollisionCage::normals[1]),
     BoundingBox(CollisionCage::positions[2], CollisionCage::normals[2]),

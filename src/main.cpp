@@ -11,6 +11,12 @@
 #define INTTUP_IMPLEMENTATION
 #include "inttup.hpp"
 
+#define PERLIN_IMP
+#include "perlin.h"
+
+#define PERLINSTUFF_IMP
+#include "perlin_stuff.hpp"
+
 #define CUBE_HELPER_IMPLEMENTATION
 #include "cube_helper.hpp"
 
@@ -25,15 +31,13 @@
 #include "mesh_component.hpp"
 
 
-
 #define CHUNK_IMPLEMENTATION
 #include "chunk_handler.hpp"
 
-#define PERLIN_IMP
-#include "perlin.h"
 
-#define WORLDGEN_IMP
-#include "worldgen.hpp"
+
+//#define WORLDGEN_IMP
+//#include "worldgen.hpp"
 
 #define COLLCAGE_IMP
 #include "collision_cage.hpp"
@@ -53,12 +57,12 @@ int waterHeight = -200;
 
 std::unordered_map<IntTup, int, IntTupHash> worldmap;
 
-std::unordered_map<IntTup, float, IntTupHash> heightmap;
+std::unordered_map<IntTup, unsigned char, IntTupHash> heightmap;
 
 
 entt::registry registry;
 
-CollisionCage cage(wrap, worldmap, registry);
+CollisionCage cage(wrap, registry);
 
 ChunkFormation cformation(wrap, worldmap, registry, heightmap);
 
@@ -85,7 +89,7 @@ int main() {
     float lastFrame = 0;
 
     int prevUwv = 0;
-    generate_world(worldmap, heightmap);
+    //generate_world(worldmap, heightmap);
 
     float user_width_half = 0.2f;
 
@@ -207,11 +211,12 @@ int main() {
             float tx = user_center.x - xi;
             float tz = user_center.z - zi;
 
-            float q11 = heightmap.at(camTup);
-            float q12 = heightmap.at(camTup + IntTup(1, 0));
-            float q21 = heightmap.at(camTup + IntTup(0, 1));
+            float q11 = static_cast<float>(height_noise_func(camTup));
+            float q12 = static_cast<float>(height_noise_func(camTup + IntTup(1, 0)));
+            float q21 = static_cast<float>(height_noise_func(camTup + IntTup(0, 1)));
 
-            float q22 = heightmap.at(camTup + IntTup(1, 1));
+            float q22 = static_cast<float>(height_noise_func(camTup + IntTup(1, 1)));
+
             float height = glm::mix(glm::mix(q11, q12, tx), glm::mix(q21, q22, tx), tz);
 
             //if(glm::distance(user.center + glm::vec3(0, 0.5, 0),wrap.cameraPos) < 0.5f )

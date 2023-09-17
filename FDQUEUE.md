@@ -3,8 +3,8 @@
 
 
 
-REALTIME NOISE (POSSIBLE OPTIMIZATION):
-            get terrain from realtime noise funcs, store changed only
+DONE                                    REALTIME NOISE (POSSIBLE OPTIMIZATION):
+                                                get terrain from realtime noise funcs, store changed only
 
 
 SHELL GROUND:
