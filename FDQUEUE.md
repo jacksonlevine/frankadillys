@@ -1,6 +1,26 @@
 
 
 
+Initiative: Reduce size of information buffered for geometry
+
+- STORE CUBE FACE VERTICES ON VERTEX SHADER, AND PASS BYTE INDEXES
+
+
+
+Only visit each voxel once.
+
+Idea: recursive building of chunk mesh expanding out from one spot
+
+
+
+
+
+
+
+
+
+
+
 
 
 DONE                                    REALTIME NOISE (POSSIBLE OPTIMIZATION):
