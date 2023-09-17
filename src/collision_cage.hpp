@@ -207,7 +207,7 @@ void CollisionCage::debug_display()
 void CollisionCage::update_position(glm::vec3 &pos)
 {
     this->position = glm::ivec3(static_cast<int>(std::round(pos.x)), static_cast<int>(std::round(pos.y)), static_cast<int>(std::round(pos.z)));
-    for (int i = 0; i < 18; ++i)
+    for (int i = 0; i < NUMBER_OF_BOXES; ++i)
     {
         this->boxes[i].set_center(CollisionCage::positions[i] + this->position);
     }
@@ -216,7 +216,7 @@ void CollisionCage::update_solidity()
 {
     this->solid.clear();
 
-    for (int i = 0; i < 18; ++i)
+    for (int i = 0; i < NUMBER_OF_BOXES; ++i)
     {
         glm::vec3 spot = this->boxes[i].center;
         IntTup tup(spot.x, spot.y, spot.z);
@@ -240,7 +240,7 @@ void CollisionCage::update_colliding(BoundingBox &user)
 {
     //RESET
     this->colliding.clear(); //Clear colliding and penetration
-    for(int i = 0; i < 18; ++i)
+    for(int i = 0; i < NUMBER_OF_BOXES; ++i)
     {
         this->penetration[i] = 0.0;
     }
@@ -363,8 +363,8 @@ const glm::vec3 CollisionCage::normals[NUMBER_OF_BOXES] = {
     glm::vec3(0, 0, -1),//FRONTRIGHTTOP,
     glm::vec3(0, 0, -1),//FRONTRIGHTBOTTOM,
 
-    glm::vec3(0, 1, 0), //INBOTTOM
-    glm::vec3(0, 1, 0), //INTOP
+    glm::vec3(0, 2, 0), //INBOTTOM
+    glm::vec3(0, -1, 0), //INTOP
 
     glm::vec3(0, 0, -1),
     glm::vec3(1, 0, 0),
