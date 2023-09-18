@@ -25,13 +25,17 @@ class Chunk {
 
 public:
     entt::entity id;
+    entt::entity newid;
     glm::vec2 chunk_position;
+    glm::vec2 old_chunk_position;
     Chunk();
     Chunk(glm::vec2 c_pos, entt::registry& r, GLWrapper& w, std::unordered_map<IntTup, int, IntTupHash>& wo, std::unordered_map<IntTup, unsigned char, IntTupHash>& hm);
 
     Chunk& operator=(const Chunk& other);
     Chunk& rebuild();
     void move_to(IntTup ipos);
+    void setx(int x);
+    void setz(int z);
 
 private:
     entt::registry* m_reg;
@@ -44,8 +48,9 @@ private:
 
 
 Chunk::Chunk(glm::vec2 c_pos, entt::registry& r, GLWrapper& w, std::unordered_map<IntTup, int, IntTupHash>& wo, std::unordered_map<IntTup, unsigned char, IntTupHash>& hm)
-    : m_reg(&r), m_wrap(&w), m_world(&wo), chunk_position(c_pos), m_height(&hm) {
+    : m_reg(&r), m_wrap(&w), m_world(&wo), chunk_position(c_pos), old_chunk_position(c_pos), m_height(&hm) {
     this->id = m_reg->create();
+    this->newid = this->id;
 };
 
 Chunk::Chunk()
@@ -58,13 +63,23 @@ Chunk& Chunk::operator=(const Chunk& other) {
     this->m_height = other.m_height;
     this->m_wrap = other.m_wrap;
     this->chunk_position = other.chunk_position;
+    this->old_chunk_position = other.old_chunk_position;
     this->id = other.id;
+    this->newid = other.newid;
     return *this;
 }
 
 void Chunk::move_to(IntTup ipos)
 {
     this->chunk_position = glm::vec2(ipos.x, ipos.z);
+}
+void Chunk::setx(int x)
+{
+    this->chunk_position.x = x;
+}
+void Chunk::setz(int z)
+{
+    this->chunk_position.y = z;
 }
 
 Chunk& Chunk::rebuild()
@@ -213,7 +228,7 @@ Chunk& Chunk::rebuild()
     }
     //std::cout << verts.size() << " " << cols.size() << " " << uvs.size() << std::endl;
 
-    if (!m_reg->all_of<MeshComponent>(this->id))
+    if (!m_reg->all_of<MeshComponent>(this->newid))
     {
         //std::cout << "You dont have a mesh component" << std::endl;
         MeshComponent m;
@@ -229,11 +244,11 @@ Chunk& Chunk::rebuild()
             cols.size() * sizeof(GLfloat),
             uvs.size() * sizeof(GLfloat)
         );
-        m_reg->emplace<MeshComponent>(this->id, m);
+        m_reg->emplace<MeshComponent>(this->newid, m);
     }
     else {
         //std::cout << "You have a mesh component" << std::endl;
-        MeshComponent& m = m_reg->get<MeshComponent>(this->id);
+        MeshComponent& m = m_reg->get<MeshComponent>(this->newid);
 
         glDeleteBuffers(1, &m.vbov);
         glDeleteBuffers(1, &m.vbouv);
@@ -255,6 +270,8 @@ Chunk& Chunk::rebuild()
             uvs.size() * sizeof(GLfloat)
         );
     }
+    this->id = this->newid;
+    this->old_chunk_position = this->chunk_position;
     return *this;
 }
 

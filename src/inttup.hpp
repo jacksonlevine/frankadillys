@@ -24,7 +24,9 @@ public:
 IntTup operator+(IntTup first, // parameter as value, move-construct (or elide)
                  const IntTup& second);
 
-
+IntTup operator-(IntTup first,
+                 const IntTup& second);
+                 
 struct IntTupHash {
     std::size_t operator()(const IntTup& tup) const;
 };
@@ -84,6 +86,16 @@ IntTup operator+(IntTup first,
     first.x += second.x;
     first.y += second.y;
     first.z += second.z;
+
+    return first;
+}
+
+IntTup operator-(IntTup first,
+                 const IntTup& second)
+{
+    first.x -= second.x;
+    first.y -= second.y;
+    first.z -= second.z;
 
     return first;
 }
