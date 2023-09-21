@@ -26,7 +26,7 @@ IntTup operator+(IntTup first, // parameter as value, move-construct (or elide)
 
 IntTup operator-(IntTup first,
                  const IntTup& second);
-                 
+
 struct IntTupHash {
     std::size_t operator()(const IntTup& tup) const;
 };

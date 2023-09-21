@@ -32,14 +32,14 @@ private:
 
 void ChunkFormation::set_position(glm::vec3& camera_pos) {
 
-    glm::vec3 chunk_f_pos = camera_pos / (float)CHUNK_WIDTH; //your "float chunk position", i.e. 1.345 
+    glm::vec3 chunk_f_pos = camera_pos / (float)CHUNK_WIDTH; //your "float chunk position", i.e. 1.345
     //std::cout << "chunk F pos: " << chunk_f_pos.x  << " " << chunk_f_pos.z << std::endl;
 
 
     static bool initial_gen = true;
-    if(initial_gen) 
+    if(initial_gen)
     {
-        for(int i = 0; i < FULL_SIZE; ++i) //lay  out the chunks like a deck of cards 
+        for(int i = 0; i < FULL_SIZE; ++i) //lay  out the chunks like a deck of cards
         {
             IntTup new_pos = positions[i];
             chunks[i].move_to(new_pos);
@@ -63,13 +63,13 @@ void ChunkFormation::set_position(glm::vec3& camera_pos) {
         IntTup movement(chunk_i_pos.x - last_pos.x, chunk_i_pos.z - last_pos.z); //HOW different it is.
         IntTup adjusted_chunk_i_pos = chunk_i_pos + IntTup(static_cast<int>(m_wrap.cameraDirection.x * 4), 0, static_cast<int>(m_wrap.cameraDirection.z * 4));
 
-        
+
         if(movement.x != 0)  {
 
-            std::sort(this->chunks, this->chunks + FULL_SIZE, [adjusted_chunk_i_pos](Chunk& a, Chunk& b){
-              int dista = (a.chunk_position.x - adjusted_chunk_i_pos.x) + (a.chunk_position.y - adjusted_chunk_i_pos.z);
-              int distb = (b.chunk_position.x - adjusted_chunk_i_pos.x) + (b.chunk_position.y - adjusted_chunk_i_pos.z);
-              return std::abs(dista) > std::abs(distb);
+            std::sort(this->chunks, this->chunks + FULL_SIZE, [adjusted_chunk_i_pos](Chunk& a, Chunk& b) {
+                int dista = (a.chunk_position.x - adjusted_chunk_i_pos.x) + (a.chunk_position.y - adjusted_chunk_i_pos.z);
+                int distb = (b.chunk_position.x - adjusted_chunk_i_pos.x) + (b.chunk_position.y - adjusted_chunk_i_pos.z);
+                return std::abs(dista) > std::abs(distb);
             });
 
             int start = std::max(0, (FULL_SIZE - (LOAD_WIDTH+1)) * movement.x);
@@ -88,10 +88,10 @@ void ChunkFormation::set_position(glm::vec3& camera_pos) {
 
         if(movement.z != 0) {
 
-            std::sort(this->chunks, this->chunks + FULL_SIZE, [adjusted_chunk_i_pos](Chunk& a, Chunk& b){
-              int dista = (a.chunk_position.x - adjusted_chunk_i_pos.x) + (a.chunk_position.y - adjusted_chunk_i_pos.z);
-              int distb = (b.chunk_position.x - adjusted_chunk_i_pos.x) + (b.chunk_position.y - adjusted_chunk_i_pos.z);
-              return std::abs(dista) > std::abs(distb);
+            std::sort(this->chunks, this->chunks + FULL_SIZE, [adjusted_chunk_i_pos](Chunk& a, Chunk& b) {
+                int dista = (a.chunk_position.x - adjusted_chunk_i_pos.x) + (a.chunk_position.y - adjusted_chunk_i_pos.z);
+                int distb = (b.chunk_position.x - adjusted_chunk_i_pos.x) + (b.chunk_position.y - adjusted_chunk_i_pos.z);
+                return std::abs(dista) > std::abs(distb);
             });
             int start = std::max(0, ((LOAD_WIDTH)*movement.z));
             int index = 0;
@@ -109,9 +109,9 @@ void ChunkFormation::set_position(glm::vec3& camera_pos) {
         }
 
 
-    
 
-         last_pos = chunk_i_pos;
+
+        last_pos = chunk_i_pos;
     }
 
 }
@@ -127,13 +127,13 @@ ChunkFormation::ChunkFormation(GLWrapper& wr, std::unordered_map<IntTup, int, In
     {
         for(int k = -half; k < half+1; ++k)
         {
-            this->positions[ind] = IntTup(i, k); 
-            
+            this->positions[ind] = IntTup(i, k);
+
             ind++;
         }
     }
     for(int i = 0; i < FULL_SIZE; ++i) {
-        this->chunks[i] = Chunk(glm::vec2(this->positions[i].x, this->positions[i].z), reg, wr, worldmap, heightmap); 
+        this->chunks[i] = Chunk(glm::vec2(this->positions[i].x, this->positions[i].z), reg, wr, worldmap, heightmap);
     }
 
 

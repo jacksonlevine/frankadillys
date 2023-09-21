@@ -99,7 +99,7 @@ Chunk& Chunk::rebuild()
     IntTup tup(0,0,0);
     IntTup thetup(chunk_position.x, chunk_position.y);
     if(Chunk::donespots.find(thetup) != Chunk::donespots.end()) {
-      Chunk::donespots.erase(thetup);
+        Chunk::donespots.erase(thetup);
     }
     for(int i = -half; i < half; ++i)
     {
@@ -281,7 +281,7 @@ Chunk& Chunk::rebuild()
     }
     this->id = this->newid;
     this->old_chunk_position = this->chunk_position;
-    
+
     Chunk::donespots.insert_or_assign(thetup, 0);
     return *this;
 }
