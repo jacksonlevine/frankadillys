@@ -45,6 +45,7 @@ void ChunkFormation::set_position(glm::vec3& camera_pos) {
             chunks[i].move_to(new_pos);
             chunks[i].rebuild();
         }
+
         initial_gen = false;
     }
 
@@ -58,22 +59,24 @@ void ChunkFormation::set_position(glm::vec3& camera_pos) {
 
     if(chunk_i_pos != last_pos)
     {
-        //std::cout << "Movement: " << chunk_i_pos.x - last_pos.x << " " << chunk_i_pos.z - last_pos.z <<  std::endl;
+        std::cout << "Movement: " << chunk_i_pos.x - last_pos.x << " " << chunk_i_pos.z - last_pos.z <<  std::endl;
         IntTup movement(chunk_i_pos.x - last_pos.x, chunk_i_pos.z - last_pos.z); //HOW different it is.
-        IntTup adjusted_chunk_i_pos = chunk_i_pos + IntTup(static_cast<int>(m_wrap.cameraDirection.x * 3), 0, static_cast<int>(m_wrap.cameraDirection.z * 3));
+        IntTup adjusted_chunk_i_pos = chunk_i_pos + IntTup(static_cast<int>(m_wrap.cameraDirection.x * 4), 0, static_cast<int>(m_wrap.cameraDirection.z * 4));
 
-        std::sort(this->chunks, this->chunks + FULL_SIZE, [adjusted_chunk_i_pos](Chunk& a, Chunk& b){
-            int dista = (a.chunk_position.x - adjusted_chunk_i_pos.x) + (a.chunk_position.y - adjusted_chunk_i_pos.z);
-            int distb = (b.chunk_position.x - adjusted_chunk_i_pos.x) + (b.chunk_position.y - adjusted_chunk_i_pos.z);
-            return std::abs(dista) > std::abs(distb);
-        });
-
+        
         if(movement.x != 0)  {
-            int start = std::max(0, (FULL_SIZE - ((LOAD_WIDTH*2)-1)) * movement.x);
+
+            std::sort(this->chunks, this->chunks + FULL_SIZE, [adjusted_chunk_i_pos](Chunk& a, Chunk& b){
+              int dista = (a.chunk_position.x - adjusted_chunk_i_pos.x) + (a.chunk_position.y - adjusted_chunk_i_pos.z);
+              int distb = (b.chunk_position.x - adjusted_chunk_i_pos.x) + (b.chunk_position.y - adjusted_chunk_i_pos.z);
+              return std::abs(dista) > std::abs(distb);
+            });
+
+            int start = std::max(0, (FULL_SIZE - (LOAD_WIDTH+1)) * movement.x);
             int index = 0;
-            for(int t = start; t < start + LOAD_WIDTH; t += 1)
+            for(int t = start; t < start + LOAD_WIDTH+1; t += 1)
             {
-                IntTup newpos = positions[t] + IntTup(movement.x, 0) + last_pos;
+                IntTup newpos = positions[t] + chunk_i_pos;
                 if(Chunk::donespots.find(newpos) == Chunk::donespots.end())
                 {
                     this->chunks[index].move_to(newpos);
@@ -84,11 +87,17 @@ void ChunkFormation::set_position(glm::vec3& camera_pos) {
         }
 
         if(movement.z != 0) {
-            int start = std::max(0, (LOAD_WIDTH*movement.z));
+
+            std::sort(this->chunks, this->chunks + FULL_SIZE, [adjusted_chunk_i_pos](Chunk& a, Chunk& b){
+              int dista = (a.chunk_position.x - adjusted_chunk_i_pos.x) + (a.chunk_position.y - adjusted_chunk_i_pos.z);
+              int distb = (b.chunk_position.x - adjusted_chunk_i_pos.x) + (b.chunk_position.y - adjusted_chunk_i_pos.z);
+              return std::abs(dista) > std::abs(distb);
+            });
+            int start = std::max(0, ((LOAD_WIDTH)*movement.z));
             int index = 0;
             for(int t = start; t < FULL_SIZE; t += LOAD_WIDTH+1)
             {
-                IntTup newpos = positions[t] + IntTup(0, movement.z) + last_pos;
+                IntTup newpos = positions[t] + chunk_i_pos;
                 if(Chunk::donespots.find(newpos) == Chunk::donespots.end())
                 {
                     this->chunks[index].move_to(newpos);
@@ -118,11 +127,13 @@ ChunkFormation::ChunkFormation(GLWrapper& wr, std::unordered_map<IntTup, int, In
     {
         for(int k = -half; k < half+1; ++k)
         {
-            this->positions[ind] = IntTup(i, k); //
+            this->positions[ind] = IntTup(i, k); 
             
-            this->chunks[ind] = Chunk(glm::vec2(i, k), reg, wr, worldmap, heightmap); //initialize chunk object for position
             ind++;
         }
+    }
+    for(int i = 0; i < FULL_SIZE; ++i) {
+        this->chunks[i] = Chunk(glm::vec2(this->positions[i].x, this->positions[i].z), reg, wr, worldmap, heightmap); 
     }
 
 
