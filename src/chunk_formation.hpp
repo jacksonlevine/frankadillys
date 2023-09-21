@@ -28,6 +28,8 @@ private:
 
 #ifdef CHUNKFORMATION_IMP
 
+
+
 void ChunkFormation::set_position(glm::vec3& camera_pos) {
 
     glm::vec3 chunk_f_pos = camera_pos / (float)CHUNK_WIDTH; //your "float chunk position", i.e. 1.345 
@@ -56,77 +58,45 @@ void ChunkFormation::set_position(glm::vec3& camera_pos) {
 
     if(chunk_i_pos != last_pos)
     {
-        std::cout << "Movement: " << chunk_i_pos.x - last_pos.x << " " << chunk_i_pos.z - last_pos.z <<  std::endl;
+        //std::cout << "Movement: " << chunk_i_pos.x - last_pos.x << " " << chunk_i_pos.z - last_pos.z <<  std::endl;
         IntTup movement(chunk_i_pos.x - last_pos.x, chunk_i_pos.z - last_pos.z); //HOW different it is.
 
+        std::sort(this->chunks, this->chunks + FULL_SIZE, [chunk_i_pos](Chunk& a, Chunk& b){
+            int dista = (a.chunk_position.x - chunk_i_pos.x) + (a.chunk_position.y - chunk_i_pos.z);
+            int distb = (b.chunk_position.x - chunk_i_pos.x) + (b.chunk_position.y - chunk_i_pos.z);
+            return std::abs(dista) > std::abs(distb);
+        });
 
+        if(movement.x != 0)  {
+            int start = std::max(0, (FULL_SIZE - ((LOAD_WIDTH*2)-1)) * movement.x);
+            int index = 0;
+            for(int t = start; t < start + LOAD_WIDTH; t += 1)
+            {
+                IntTup newpos = positions[t] + IntTup(movement.x, 0) + last_pos;
+                if(Chunk::donespots.find(newpos) == Chunk::donespots.end())
+                {
+                    this->chunks[index].move_to(newpos);
+                    this->chunks[index].rebuild();
+                    index++;
+                }
+            }
+        }
 
-
-
-       
-        std::vector<entt::entity> offeredupids;
-
-        //ERASE THE BACK 
         if(movement.z != 0) {
-            for(int t = std::max(0, LOAD_WIDTH * -movement.z); t < FULL_SIZE; t += LOAD_WIDTH+1) {
-                if(std::find(offeredupids.begin(), offeredupids.end(), chunks[t].id) == offeredupids.end())
+            int start = std::max(0, (LOAD_WIDTH*movement.z));
+            int index = 0;
+            for(int t = start; t < FULL_SIZE; t += LOAD_WIDTH+1)
+            {
+                IntTup newpos = positions[t] + IntTup(0, movement.z) + last_pos;
+                if(Chunk::donespots.find(newpos) == Chunk::donespots.end())
                 {
-                    offeredupids.push_back(chunks[t].id);
+                    this->chunks[index].move_to(newpos);
+                    this->chunks[index].rebuild();
+                    index++;
                 }
-                
+
             }
         }
-        if(movement.x != 0) {
-            for(int t = std::max(0, LOAD_WIDTH * -movement.x) * (LOAD_WIDTH+1); t < FULL_SIZE; t += 1) {
-                if(std::find(offeredupids.begin(), offeredupids.end(), chunks[t].id) == offeredupids.end())
-                {
-                    offeredupids.push_back(chunks[t].id);
-                }
-                
-            }
-        }
-
-
-        //SHIFT THE MIDDLES
-        for(int i = 0; i < FULL_SIZE; ++i)
-        {
-            int newIndex = i - (movement.x * LOAD_WIDTH) - movement.z;
-            if(newIndex > 0 && newIndex < FULL_SIZE) {
-                chunks[newIndex].newid = chunks[i].id;
-                chunks[newIndex].chunk_position = chunks[i].old_chunk_position;
-            }
-        }
-
-        //REBUILD THE FRONT
-        if(movement.z != 0) {
-            for(int t = std::max(0, LOAD_WIDTH * movement.z); t < FULL_SIZE; t += LOAD_WIDTH+1) {
-                if(offeredupids.size() > 0)
-                {
-                    chunks[t].newid = offeredupids.back();
-                    offeredupids.pop_back();
-
-                    IntTup new_pos = positions[t] + chunk_i_pos;
-                    chunks[t].move_to(new_pos);
-                    chunks[t].rebuild();
-                }
-                
-            }
-        }
-        if(movement.x != 0) {
-            for(int t = std::max(0, LOAD_WIDTH * movement.x) * (LOAD_WIDTH+1); t < FULL_SIZE; t += 1) {
-                if(offeredupids.size() > 0)
-                {
-                    chunks[t].newid = offeredupids.back();
-                    offeredupids.pop_back();
-
-                    IntTup new_pos = positions[t] + chunk_i_pos;
-                    chunks[t].move_to(new_pos);
-                    chunks[t].rebuild();
-                }
-                
-            }
-        }
-
 
 
     

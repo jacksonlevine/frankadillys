@@ -36,7 +36,7 @@ public:
     void move_to(IntTup ipos);
     void setx(int x);
     void setz(int z);
-
+    static std::unordered_map<IntTup, unsigned char, IntTupHash> donespots;
 private:
     entt::registry* m_reg;
     GLWrapper* m_wrap;
@@ -46,6 +46,7 @@ private:
 
 #ifdef CHUNK_IMPLEMENTATION
 
+std::unordered_map<IntTup, unsigned char, IntTupHash> Chunk::donespots;
 
 Chunk::Chunk(glm::vec2 c_pos, entt::registry& r, GLWrapper& w, std::unordered_map<IntTup, int, IntTupHash>& wo, std::unordered_map<IntTup, unsigned char, IntTupHash>& hm)
     : m_reg(&r), m_wrap(&w), m_world(&wo), chunk_position(c_pos), old_chunk_position(c_pos), m_height(&hm) {
@@ -72,6 +73,11 @@ Chunk& Chunk::operator=(const Chunk& other) {
 void Chunk::move_to(IntTup ipos)
 {
     this->chunk_position = glm::vec2(ipos.x, ipos.z);
+    IntTup thetup(chunk_position.x, chunk_position.y);
+    if(Chunk::donespots.find(thetup) != Chunk::donespots.end())
+    {
+        Chunk::donespots.erase(thetup);
+    }
 }
 void Chunk::setx(int x)
 {
@@ -272,6 +278,8 @@ Chunk& Chunk::rebuild()
     }
     this->id = this->newid;
     this->old_chunk_position = this->chunk_position;
+    IntTup thetup(chunk_position.x, chunk_position.y);
+    Chunk::donespots.insert_or_assign(thetup, 0);
     return *this;
 }
 
