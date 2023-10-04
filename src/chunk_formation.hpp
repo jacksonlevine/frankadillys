@@ -59,57 +59,28 @@ void ChunkFormation::set_position(glm::vec3& camera_pos) {
 
     if(chunk_i_pos != last_pos)
     {
-        std::cout << "Movement: " << chunk_i_pos.x - last_pos.x << " " << chunk_i_pos.z - last_pos.z <<  std::endl;
-        IntTup movement(chunk_i_pos.x - last_pos.x, chunk_i_pos.z - last_pos.z); //HOW different it is.
-        IntTup adjusted_chunk_i_pos = chunk_i_pos + IntTup(static_cast<int>(m_wrap.cameraDirection.x * 4), 0, static_cast<int>(m_wrap.cameraDirection.z * 4));
+        // std::cout << "Movement: " << chunk_i_pos.x - last_pos.x << " " << chunk_i_pos.z - last_pos.z <<  std::endl;
+        //IntTup movement(chunk_i_pos.x - last_pos.x, chunk_i_pos.z - last_pos.z); //HOW different it is.
+        //IntTup adjusted_chunk_i_pos = chunk_i_pos + IntTup(static_cast<int>(m_wrap.cameraDirection.x * 4), 0, static_cast<int>(m_wrap.cameraDirection.z * 4));
 
-
-        if(movement.x != 0)  {
-
-            std::sort(this->chunks, this->chunks + FULL_SIZE, [adjusted_chunk_i_pos](Chunk& a, Chunk& b) {
-                int dista = (a.chunk_position.x - adjusted_chunk_i_pos.x) + (a.chunk_position.y - adjusted_chunk_i_pos.z);
-                int distb = (b.chunk_position.x - adjusted_chunk_i_pos.x) + (b.chunk_position.y - adjusted_chunk_i_pos.z);
+        std::sort(this->chunks, this->chunks + FULL_SIZE, [chunk_i_pos](Chunk& a, Chunk& b) {
+                int dista = (a.chunk_position.x - chunk_i_pos.x) + (a.chunk_position.y - chunk_i_pos.z);
+                int distb = (b.chunk_position.x - chunk_i_pos.x) + (b.chunk_position.y - chunk_i_pos.z);
                 return std::abs(dista) > std::abs(distb);
-            });
+        });
 
-            int start = std::max(0, (FULL_SIZE - (LOAD_WIDTH+1)) * movement.x);
-            int index = 0;
-            for(int t = start; t < start + LOAD_WIDTH+1; t += 1)
-            {
-                IntTup newpos = positions[t] + chunk_i_pos;
-                if(Chunk::donespots.find(newpos) == Chunk::donespots.end())
-                {
-                    this->chunks[index].move_to(newpos);
-                    this->chunks[index].rebuild();
-                    index++;
-                }
+
+
+
+        int index = 0;
+        for(int i = 0; i < FULL_SIZE; ++i) {
+            IntTup& pos = positions[i] + chunk_i_pos;
+            if(Chunk::donespots.find(pos) == Chunk::donespots.end()) {
+                this->chunks[index].move_to(pos);
+                this->chunks[index].rebuild();
+                index++;
             }
         }
-
-        if(movement.z != 0) {
-
-            std::sort(this->chunks, this->chunks + FULL_SIZE, [adjusted_chunk_i_pos](Chunk& a, Chunk& b) {
-                int dista = (a.chunk_position.x - adjusted_chunk_i_pos.x) + (a.chunk_position.y - adjusted_chunk_i_pos.z);
-                int distb = (b.chunk_position.x - adjusted_chunk_i_pos.x) + (b.chunk_position.y - adjusted_chunk_i_pos.z);
-                return std::abs(dista) > std::abs(distb);
-            });
-            int start = std::max(0, ((LOAD_WIDTH)*movement.z));
-            int index = 0;
-            for(int t = start; t < FULL_SIZE; t += LOAD_WIDTH+1)
-            {
-                IntTup newpos = positions[t] + chunk_i_pos;
-                if(Chunk::donespots.find(newpos) == Chunk::donespots.end())
-                {
-                    this->chunks[index].move_to(newpos);
-                    this->chunks[index].rebuild();
-                    index++;
-                }
-
-            }
-        }
-
-
-
 
         last_pos = chunk_i_pos;
     }
