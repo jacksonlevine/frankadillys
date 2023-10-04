@@ -17,6 +17,7 @@ struct InputState
     float forwardVelocity;
     float upVelocity;
     float rightVelocity;
+    bool reload;
 };
 
 class GLWrapper
@@ -158,6 +159,11 @@ void GLWrapper::keyCallback(GLFWwindow *window, int key, int scancode, int actio
                 instance->activeState.forward = true;
             if (action == GLFW_RELEASE)
                 instance->activeState.forward = false;
+        }
+        if (key == GLFW_KEY_R)
+        {
+            if (action == GLFW_PRESS)
+                instance->activeState.reload = true;
         }
         if (key == GLFW_KEY_SPACE)
         {

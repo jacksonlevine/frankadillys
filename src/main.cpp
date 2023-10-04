@@ -112,6 +112,10 @@ int main() {
     while (!glfwWindowShouldClose(wrap.window))
     {
         cformation.set_position(wrap.cameraPos);
+        if(wrap.activeState.reload) {
+            wrap.activeState.reload = false;
+            cformation.reload(wrap.cameraPos);
+        }
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         if (wrap.activeState.forward)
         {

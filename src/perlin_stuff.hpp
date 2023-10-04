@@ -26,7 +26,7 @@ bool block_noise_func(IntTup& tup)
 
 unsigned char height_noise_func(int x, int z)
 {
-    return static_cast<unsigned char>(std::trunc(35.0f + p.noise(((float)x)/105.35f, (float)34.23f, ((float)z)/105.35f)*5.0f));
+    return static_cast<unsigned char>(std::trunc(35.0f + p.noise(((float)x)/105.35f, (float)34.23f, ((float)z)/105.35f)*10.0f));
 }
 
 unsigned char height_noise_func(IntTup& tup)

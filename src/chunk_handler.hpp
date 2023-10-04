@@ -14,7 +14,7 @@
 #include "perlin_stuff.hpp"
 
 #ifndef CHUNK_WIDTH
-#define CHUNK_WIDTH 18
+#define CHUNK_WIDTH 16
 #endif
 
 #ifndef CHUNK_HEIGHT
