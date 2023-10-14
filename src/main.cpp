@@ -51,6 +51,9 @@
 #include <entt/entt.hpp>
 #include <cstdlib>
 
+#include "nuggo.hpp"
+
+#include <thread>
 unsigned int texture;
 GLWrapper wrap;
 int waterHeight = -200;
@@ -73,6 +76,14 @@ void prepare_texture();
 std::string show_vars;
 
 bool grounded = false;
+
+
+
+void chunk_formation_func() {
+    while(!glfwWindowShouldClose(wrap.window)) {
+        cformation.reload_if_diff(wrap.cameraPos);
+    }
+}
 
 
 
@@ -108,10 +119,11 @@ int main() {
 
     auto meshes_view = registry.view<MeshComponent>();
 
+    std::thread cform_func(chunk_formation_func);
 
     while (!glfwWindowShouldClose(wrap.window))
     {
-        cformation.set_position(wrap.cameraPos);
+        
         if(wrap.activeState.reload) {
             wrap.activeState.reload = false;
             cformation.reload(wrap.cameraPos);
@@ -128,7 +140,7 @@ int main() {
         cage.update_readings(collision_cage_center);
         if(wrap.activeState.jump && grounded)
         {
-            wrap.activeState.upVelocity += 5.0f;
+            wrap.activeState.upVelocity += 8.0f;
             grounded = false;
             wrap.activeState.jump = false;
         }
@@ -149,11 +161,6 @@ int main() {
 
 
 
-        if(!grounded)
-        {
-            wrap.activeState.upVelocity = std::max(wrap.activeState.upVelocity + ((GRAV * -deltaTime) * (deltaTime*10)), -(GRAV * deltaTime));
-            wrap.activeState.upVelocity = std::min(wrap.activeState.upVelocity, (GRAV * deltaTime)*2.0f);
-        }
 
         if (wrap.activeState.forwardVelocity != 0 || wrap.activeState.upVelocity != 0)
         {
@@ -207,9 +214,9 @@ int main() {
                 user.set_center(user_center + desired_movement, 0.85f, user_width_half);
             }
 
-            IntTup camTup((int)std::floor(user.center.x), (int)std::floor(user.center.z));
-            float xi = std::floor(user_center.x);
-            float zi = std::floor(user_center.z);
+            IntTup camTup((int)std::round(user.center.x), (int)std::round(user.center.z));
+            float xi = std::round(user_center.x);
+            float zi = std::round(user_center.z);
 
 
             float tx = user_center.x - xi;
@@ -243,6 +250,12 @@ int main() {
 
         }
 
+        if(!grounded)
+        {
+            wrap.activeState.upVelocity = std::max(wrap.activeState.upVelocity + ((GRAV * -deltaTime) * (deltaTime*10)), -(GRAV * deltaTime));
+            wrap.activeState.upVelocity = std::min(wrap.activeState.upVelocity, (GRAV * deltaTime)*2.0f);
+        }
+
 
 
         int uwV = (wrap.cameraPos.y - 0.15f < waterHeight) ? 1 : 0;
@@ -261,6 +274,67 @@ int main() {
         GLuint uwLoc = glGetUniformLocation(wrap.shaderProgram, "underWater");
         // int uwFeet = (wrap.cameraPos.y - 2 < waterHeight) ? 1 : 0;
         glUniform1i(uwLoc, uwV);
+
+
+
+
+        if(wrap.mesh_queue.size() != 0) {
+            Nuggo &n = wrap.mesh_queue.back();
+
+             if (!registry.all_of<MeshComponent>(n.me))
+            {
+                //std::cout << "You dont have a mesh component" << std::endl;
+                MeshComponent m;
+                m.length = n.verts.size();
+                wrap.bindGeometry(
+                    m.vbov,
+                    m.vboc,
+                    m.vbouv,
+                    n.verts.data(),
+                    n.cols.data(),
+                    n.uvs.data(),
+                    n.verts.size() * sizeof(GLfloat),
+                    n.cols.size() * sizeof(GLfloat),
+                    n.uvs.size() * sizeof(GLfloat)
+                );
+                registry.emplace<MeshComponent>(n.me, m);
+            }
+            else {
+                //std::cout << "You have a mesh component" << std::endl;
+                MeshComponent& m = registry.get<MeshComponent>(n.me);
+
+                glDeleteBuffers(1, &m.vbov);
+                glDeleteBuffers(1, &m.vbouv);
+                glDeleteBuffers(1, &m.vboc);
+                glGenBuffers(1, &m.vbov);
+                glGenBuffers(1, &m.vbouv);
+                glGenBuffers(1, &m.vboc); //delete and re-gen because the buffer might be different sized
+
+                m.length = n.verts.size();
+                wrap.bindGeometry(
+                    m.vbov,
+                    m.vboc,
+                    m.vbouv,
+                    n.verts.data(),
+                    n.cols.data(),
+                    n.uvs.data(),
+                    n.verts.size() * sizeof(GLfloat),
+                    n.cols.size() * sizeof(GLfloat),
+                    n.uvs.size() * sizeof(GLfloat)
+                );
+            }
+            
+
+
+            wrap.mesh_queue.pop_back();
+        }
+
+
+
+
+
+
+
 //draw here
 
 

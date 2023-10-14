@@ -20,6 +20,7 @@ public:
     ChunkFormation(GLWrapper& wr, std::unordered_map<IntTup, int, IntTupHash> &worldmap, entt::registry& reg, std::unordered_map<IntTup, unsigned char, IntTupHash> &heightmap);
     void set_position(glm::vec3& pos);
     void reload(glm::vec3& pos);
+    void reload_if_diff(glm::vec3& pos);
 private:
     GLWrapper& m_wrap;
     std::unordered_map<IntTup, int, IntTupHash>& m_world;
@@ -36,28 +37,52 @@ void ChunkFormation::reload(glm::vec3& camera_pos) {
     0,
     static_cast<int>(std::round(chunk_f_pos.z))); 
 
-
- IntTup adjusted_chunk_i_pos = chunk_i_pos + IntTup(static_cast<int>(m_wrap.cameraDirection.x * 4), 0, static_cast<int>(m_wrap.cameraDirection.z * 4));
-
-        std::sort(this->chunks, this->chunks + FULL_SIZE, [adjusted_chunk_i_pos](Chunk& a, Chunk& b) {
-                int dista = (a.chunk_position.x - adjusted_chunk_i_pos.x) + (a.chunk_position.y - adjusted_chunk_i_pos.z);
-                int distb = (b.chunk_position.x - adjusted_chunk_i_pos.x) + (b.chunk_position.y - adjusted_chunk_i_pos.z);
-                return std::abs(dista) > std::abs(distb);
-        });
-
-
-    int index = 0;
     for(int i = 0; i < FULL_SIZE; ++i) 
     {
         
         IntTup new_pos = positions[i] + chunk_i_pos;
-        if(Chunk::donespots.find(new_pos) == Chunk::donespots.end()) {
-            chunks[index].move_to(new_pos);
-            chunks[index].rebuild();
-            index++;
+        chunks[i].move_to(new_pos);
+        chunks[i].rebuild();
+
+    }
+}
+
+void ChunkFormation::reload_if_diff(glm::vec3& camera_pos) {
+    glm::vec3 chunk_f_pos = camera_pos / (float)CHUNK_WIDTH;
+    IntTup chunk_i_pos(
+    static_cast<int>(std::round(chunk_f_pos.x)),
+    0,
+    static_cast<int>(std::round(chunk_f_pos.z))); 
+
+    static bool initial_gen = true;
+    if(initial_gen)
+    {
+        for(int i = 0; i < FULL_SIZE; ++i)
+        {
+            IntTup new_pos = positions[i] + chunk_i_pos;
+            chunks[i].move_to(new_pos);
+            chunks[i].rebuild();
+        }
+
+        initial_gen = false;
+    }
+
+    static IntTup last_pos(0,0);
+    
+
+    if(chunk_i_pos != last_pos) {
+
+        for(int i = 0; i < FULL_SIZE; ++i) 
+        {
+            
+            IntTup new_pos = positions[i] + chunk_i_pos;
+            chunks[i].move_to(new_pos);
+            chunks[i].rebuild();
+
         }
 
     }
+    
 }
 
 void ChunkFormation::set_position(glm::vec3& camera_pos) {

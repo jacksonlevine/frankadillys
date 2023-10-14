@@ -6,6 +6,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include "nuggo.hpp"
 
 struct InputState
 {
@@ -35,6 +36,11 @@ public:
     float cameraPitch;
     float lastX, lastY;
     bool firstMouse;
+
+
+    std::vector<Nuggo> mesh_queue;
+
+
     glm::mat4 view;
     glm::mat4 model;
 

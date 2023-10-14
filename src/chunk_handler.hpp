@@ -12,6 +12,7 @@
 #include <string>
 
 #include "perlin_stuff.hpp"
+#include "nuggo.hpp"
 
 #ifndef CHUNK_WIDTH
 #define CHUNK_WIDTH 16
@@ -237,7 +238,7 @@ Chunk& Chunk::rebuild()
     }
     //std::cout << verts.size() << " " << cols.size() << " " << uvs.size() << std::endl;
 
-    if (!m_reg->all_of<MeshComponent>(this->newid))
+   /* if (!m_reg->all_of<MeshComponent>(this->newid))
     {
         //std::cout << "You dont have a mesh component" << std::endl;
         MeshComponent m;
@@ -279,6 +280,16 @@ Chunk& Chunk::rebuild()
             uvs.size() * sizeof(GLfloat)
         );
     }
+    */ 
+
+    Nuggo n;
+    n.verts=verts;
+    n.cols=cols;
+    n.uvs=uvs;
+    n.me=newid;
+
+    m_wrap->mesh_queue.push_back(n);
+
     this->id = this->newid;
     this->old_chunk_position = this->chunk_position;
     thetup.set(chunk_position.x, chunk_position.y);
